@@ -1,0 +1,67 @@
+#! /usr/bin/env python
+
+import socket, time
+import base64
+
+import string
+rot13 = string.maketrans(
+    "ABCDEFGHIJKLMabcdefghijklmNOPQRSTUVWXYZnopqrstuvwxyz",
+    "NOPQRSTUVWXYZnopqrstuvwxyzABCDEFGHIJKLMabcdefghijklm")
+string.translate("Hello World!", rot13)
+
+
+def ginpong():
+    while 1:
+        junk = b""
+        junk = irc.recv(7000)
+        print(junk)
+        beg = junk.find(b"PING") # Get the index of "PING"
+        if beg > -1:             # If PING is captured
+            junk = junk[beg:]
+            if junk[5:].find(b" ")>0: # Check if there is a data sent after "PING"
+                junk = junk[:(junk[5:].find(b" "))+4]+b"\r\n" # If TRUE, strip the data
+                                                            # to obtain only "PING" message
+            junk = junk.replace(b"PING",b"PONG") # raplace "PING" with "PONG"
+            irc.send(junk) # send back the "PONG" message
+            irc.send(junk) # do it more than once to make sure it's received
+            irc.send(junk)
+            break
+
+hote = "irc.root-me.org"
+port = 6667
+bot = "Candy"
+channel = "#root-me_challenge"
+
+
+irc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+irc.connect((hote, port))
+print(irc.recv(1024))
+
+irc.send("NICK Glazic2 \r\n")
+irc.send("USER Glazic2 " + hote + " root-me :My Bot \r\n")
+irc.send("JOIN " + channel)
+
+ginpong()
+
+irc.send("PRIVMSG Candy !ep3 \r\n")
+while 1:
+    donnee = irc.recv(1024)
+    if donnee.find("/"):
+        donnee = donnee[1:]
+        i = 0
+        chaine_vide = ""
+        print donnee[:5]
+
+        if donnee[:5] == "Candy":
+            print("\nTraitement donnees ....\n")
+            tab = donnee.split()
+            print"Tableau : ",tab
+            longueur_tab = len(tab)
+            element = tab[longueur_tab - 1]
+            print(element)
+            element = element[1:]
+
+            chaine_vide = string.translate(element,rot13)
+
+            irc.send("PRIVMSG Candy :!ep3 -rep " + chaine_vide + " \r\n")
+            print(irc.recv(1024))
